@@ -81,6 +81,16 @@ export default function RecipeDetail() {
             )}
           </div>
 
+          {recipe.gallery && recipe.gallery.filter(g => g !== recipe.image).length > 0 && (
+            <div className="flex gap-3 overflow-x-auto pb-2 snap-x -mt-2">
+              {recipe.gallery.filter(g => g !== recipe.image).map((img, i) => (
+                <div key={i} className="w-24 h-24 shrink-0 rounded-xl overflow-hidden snap-start border border-neutral-200 dark:border-neutral-800">
+                  <img src={img} alt={`Foto ${i+1}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-4">
             <button 
               onClick={handleOpenPantryReview}

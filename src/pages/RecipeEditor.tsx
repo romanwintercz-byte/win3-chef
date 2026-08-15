@@ -37,6 +37,7 @@ export default function RecipeEditor() {
   const { fields: instFields, append: appendInst, remove: removeInst } = useRHFieldArray({ control, name: "instructions" as never });
 
   const watchImage = watch('image');
+  const watchGallery = watch('gallery') || [];
 
   const handleSave = (data: any) => {
     if (existingRecipe) {
@@ -47,15 +48,26 @@ export default function RecipeEditor() {
     navigate('/');
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setValue('image', reader.result as string);
+        const result = reader.result as string;
+        setValue('gallery', [...(watch('gallery') || []), result]);
+        
+        // If there's no main image yet, set it as the main image too
+        if (!watch('image')) {
+          setValue('image', result);
+        }
       };
       reader.readAsDataURL(file);
-    }
+    });
+    
+    // Clear input so the same files can be selected again
+    e.target.value = '';
   };
 
   const handleAIImportImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,22 +222,44 @@ export default function RecipeEditor() {
 
           <div>
             <label className="block text-sm font-medium mb-1.5">Fotografie jídla</label>
-            <div className="flex gap-4 items-center">
-              {watchImage && (
-                <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-800">
-                  <img src={watchImage} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-              )}
-              <div className="flex-1 flex items-center gap-2">
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" ref={fileInputRef} />
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 border border-neutral-200 dark:border-neutral-800 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800">
-                  <ImageIcon size={18} /> Vybrat obrázek
-                </button>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-4">
                 {watchImage && (
-                  <button type="button" onClick={() => setValue('image', undefined)} className="text-red-500 hover:text-red-600 text-sm font-medium p-2">
-                    Odstranit
-                  </button>
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-800 group">
+                    <img src={watchImage} alt="Hlavní" className="w-full h-full object-cover" />
+                    <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded backdrop-blur-md">Hlavní</div>
+                    <button type="button" onClick={() => setValue('image', undefined)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 )}
+                {watchGallery.map((img, idx) => {
+                  if (img === watchImage) return null; // Don't duplicate main image
+                  return (
+                    <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-800 group">
+                      <img src={img} alt={`Další foto ${idx}`} className="w-full h-full object-cover" />
+                      <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded backdrop-blur-md hidden group-hover:block cursor-pointer" onClick={() => setValue('image', img)}>Nastavit hlavní</div>
+                      <button type="button" onClick={() => {
+                        const newGallery = [...watchGallery];
+                        newGallery.splice(idx, 1);
+                        setValue('gallery', newGallery);
+                      }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" id="file-upload" />
+                <input type="file" accept="image/*" capture="environment" onChange={handleGalleryUpload} className="hidden" id="camera-upload" />
+                
+                <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-neutral-200 dark:border-neutral-800 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors font-medium">
+                  <ImageIcon size={18} /> Nahrát foto
+                </label>
+                <label htmlFor="camera-upload" className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors font-medium">
+                  <Camera size={18} /> Vyfotit z mobilu
+                </label>
               </div>
             </div>
           </div>

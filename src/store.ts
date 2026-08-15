@@ -40,6 +40,7 @@ export interface Recipe {
   type: string;
   tags: string[];
   image?: string; // Base64 or ObjectURL
+  gallery?: string[]; // Additional photos
   videoUrl?: string;
   createdAt: number;
 }
