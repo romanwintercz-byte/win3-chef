@@ -96,6 +96,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/recipe/:id" element={<RecipeDetail />} />
           <Route path="/recipe/new" element={<RecipeEditor />} />
+          <Route path="/recipe/edit/:id" element={<RecipeEditor />} />
           <Route path="/plan" element={<MealPlanner />} />
           <Route path="/cart" element={<ShoppingList />} />
           <Route path="/settings" element={<SettingsPage />} />
