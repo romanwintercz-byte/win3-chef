@@ -1,0 +1,6 @@
+{
+  "name": "ChefMinds - Osobní AI Kuchař",
+  "description": "Inteligentní správce receptů s offline režimem a AI asistentem pro vaření.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
