@@ -48,23 +48,63 @@ export default function RecipeEditor() {
     navigate('/');
   };
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setValue('gallery', [...(watch('gallery') || []), result]);
-        
-        // If there's no main image yet, set it as the main image too
-        if (!watch('image')) {
-          setValue('image', result);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    const newImages: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const compressedBase64 = await compressImage(file);
+        newImages.push(compressedBase64);
+      } catch (error) {
+        console.error("Failed to compress image:", error);
+      }
+    }
+
+    if (newImages.length > 0) {
+      setValue('gallery', [...(watch('gallery') || []), ...newImages]);
+      if (!watch('image')) {
+        setValue('image', newImages[0]);
+      }
+    }
     
     // Clear input so the same files can be selected again
     e.target.value = '';

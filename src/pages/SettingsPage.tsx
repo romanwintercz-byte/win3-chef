@@ -96,20 +96,20 @@ export default function SettingsPage() {
         </div>
         
         {showImportConfirm && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-xl border border-red-100 dark:border-red-900/30 text-sm font-medium">
-            <p className="font-bold mb-2 flex items-center gap-2"><AlertTriangle size={18} /> Opravdu importovat?</p>
-            <p className="mb-4">Tato akce nenávratně smaže všechna vaše stávající data a nahradí je daty ze souboru.</p>
+          <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 rounded-xl border border-orange-100 dark:border-orange-900/30 text-sm font-medium">
+            <p className="font-bold mb-2 flex items-center gap-2"><Upload size={18} /> Chytrý Import (Sloučení)</p>
+            <p className="mb-4">Vaše stávající recepty zůstanou zachovány. Z importovaného souboru se přidají pouze zcela nové recepty a aktualizují se ty, které byly v druhém zařízení změněny. Nákupní seznam a jídelníček nebudou ovlivněny.</p>
             <div className="flex gap-3">
-              <button onClick={confirmImport} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">Ano, přepsat data</button>
+              <button onClick={confirmImport} className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">Provést sloučení</button>
               <button onClick={cancelImport} className="bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-4 py-2 rounded-lg transition-colors">Zrušit</button>
             </div>
           </div>
         )}
         
         {!showImportConfirm && (
-          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-500 rounded-xl flex gap-3 text-sm font-medium">
+          <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400 rounded-xl flex gap-3 text-sm font-medium">
             <AlertTriangle className="shrink-0" size={20} />
-            <p>Importování přepíše všechna vaše současná data. Před importem doporučujeme provést zálohu.</p>
+            <p>Import dat využívá chytré sloučení. Staré recepty se nepřemažou, pouze se doplní ty nové.</p>
           </div>
         )}
       </div>

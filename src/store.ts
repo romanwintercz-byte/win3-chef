@@ -43,6 +43,7 @@ export interface Recipe {
   gallery?: string[]; // Additional photos
   videoUrl?: string;
   createdAt: number;
+  updatedAt?: number;
 }
 
 export interface ShoppingListItem {
@@ -101,11 +102,11 @@ export const useAppStore = create<AppState>()(
       },
 
       addRecipe: (recipe) => set((state) => ({
-        recipes: [{ ...recipe, id: uuidv4(), createdAt: Date.now() }, ...state.recipes]
+        recipes: [{ ...recipe, id: uuidv4(), createdAt: Date.now(), updatedAt: Date.now() }, ...state.recipes]
       })),
 
       updateRecipe: (id, updatedRecipe) => set((state) => ({
-        recipes: state.recipes.map((r) => r.id === id ? { ...r, ...updatedRecipe } : r)
+        recipes: state.recipes.map((r) => r.id === id ? { ...r, ...updatedRecipe, updatedAt: Date.now() } : r)
       })),
 
       deleteRecipe: (id) => set((state) => ({
@@ -168,22 +169,35 @@ export const useAppStore = create<AppState>()(
         preferences: { ...state.preferences, ...prefs }
       })),
 
-      importData: (dataStr) => {
+      importData: (dataStr) => set((state) => {
         try {
           const data = JSON.parse(dataStr);
           if (data && data.recipes) {
-            set({
-              recipes: data.recipes || [],
-              shoppingList: data.shoppingList || [],
-              mealPlan: data.mealPlan || [],
-              preferences: data.preferences || { diet: 'Vše', theme: 'system' }
+            const incomingRecipes: Recipe[] = data.recipes;
+            const newRecipes = [...state.recipes];
+
+            incomingRecipes.forEach(incoming => {
+              const existingIndex = newRecipes.findIndex(r => r.id === incoming.id);
+              if (existingIndex >= 0) {
+                const existing = newRecipes[existingIndex];
+                const incomingTime = incoming.updatedAt || incoming.createdAt || 0;
+                const existingTime = existing.updatedAt || existing.createdAt || 0;
+                if (incomingTime > existingTime) {
+                  newRecipes[existingIndex] = incoming;
+                }
+              } else {
+                newRecipes.push(incoming);
+              }
             });
+
+            return { recipes: newRecipes }; // We don't overwrite shoppingList or mealPlan to protect current state
           }
+          return state;
         } catch (e) {
           console.error("Failed to import data", e);
-          alert("Nepodařilo se importovat data. Neplatný formát.");
+          return state;
         }
-      },
+      }),
 
       exportData: () => {
         const state = get();
